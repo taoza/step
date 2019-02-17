@@ -108,7 +108,10 @@ func (sm *StateMachine) SetTaskHandler(task_name string, resource_fn interface{}
 		return err
 	}
 
-	task.SetTaskHandler(resource_fn)
+	if task != nil {
+		task.SetTaskHandler(resource_fn)
+	}
+
 	return nil
 }
 
