@@ -118,8 +118,9 @@ func validateArguments(handler reflect.Type) error {
 // RawMessage is the struct passed to the Lambda Handler
 // It contains the name of the Task and the Inputs Raw message
 type RawMessage struct {
-	Task  *string
-	Input json.RawMessage
+	Task       *string
+	Input      json.RawMessage
+	Parameters json.RawMessage
 }
 
 ///////////
@@ -175,7 +176,7 @@ func CreateHandler(tm *TaskHandlers) (func(context context.Context, input *RawMe
 			return nil, &TaskError{"Cannot Find Task", task_name, tm.Tasks()}
 		}
 
-		return CallHandler(reflection, ctx, input.Input)
+		return CallHandler(reflection, ctx, input.Input, input.Parameters)
 	}
 
 	return handler, nil
@@ -197,7 +198,7 @@ func recoveryError(r interface{}) error {
 
 // CallHandler calls a TaskReflections Handler with the correct objects using reflection
 // Mostly borrowed from the aws-lambda-go package
-func CallHandler(reflection TaskReflection, ctx context.Context, input []byte) (ret interface{}, err error) {
+func CallHandler(reflection TaskReflection, ctx context.Context, input []byte, rawParams []byte) (ret interface{}, err error) {
 	defer func() {
 		if r := recover(); r != nil {
 			fmt.Println("Recovering", r, fmt.Sprintf("%s\n", debug.Stack()))
@@ -217,6 +218,10 @@ func CallHandler(reflection TaskReflection, ctx context.Context, input []byte) (
 	if ctx == nil {
 		ctx = context.Background()
 	}
+
+	params := map[string]interface{}{}
+	json.Unmarshal(rawParams, &params)
+	ctx = context.WithValue(ctx, "Params", params)
 
 	args = append(args, reflect.ValueOf(ctx))
 	args = append(args, event.Elem())
@@ -245,5 +250,5 @@ func CallHandlerFunction(handlerSymbol interface{}, ctx context.Context, input i
 	}
 
 	reflection := CreateTaskReflection(handlerSymbol)
-	return CallHandler(reflection, ctx, raw_json)
+	return CallHandler(reflection, ctx, raw_json, nil)
 }

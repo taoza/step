@@ -101,7 +101,11 @@ func unmarshallState(name string, raw_json *json.RawMessage) ([]state.State, err
 		var s state.TaskState
 		err = json.Unmarshal(*raw_json, &s)
 		// This will inject the Task name into the input
-		s.Parameters = map[string]interface{}{"Task": name, "Input.$": "$"}
+		if p, ok := s.Parameters.(map[string]interface{}); ok {
+			s.Parameters = map[string]interface{}{"Task": name, "Input.$": "$", "Parameters": p}
+		} else {
+			s.Parameters = map[string]interface{}{"Task": name, "Input.$": "$"}
+		}
 		s.Type = to.Strp("Task")
 		newState = &s
 	default:

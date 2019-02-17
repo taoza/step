@@ -22,7 +22,7 @@ nil for JSON null
 
 */
 
-var NOT_FOUND_ERROR = errors.New("Not Found")
+var NOT_FOUND_ERROR = errors.New("JSON Path Not Found")
 
 type Path struct {
 	path []string
@@ -257,7 +257,7 @@ func recursiveGet(data interface{}, path []string) (interface{}, error) {
 	}
 
 	if data == nil {
-		return nil, errors.New("Not Found")
+		return nil, NOT_FOUND_ERROR
 	}
 
 	switch data.(type) {
