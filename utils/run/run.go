@@ -35,8 +35,7 @@ func Exec(state_machine *machine.StateMachine, err error) func(*string) {
 			os.Exit(1)
 		}
 
-		fmt.Println(output_json)
-		os.Exit(0)
+		fmt.Printf("Final output: %v", output_json)
 	}
 }
 
