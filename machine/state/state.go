@@ -217,7 +217,6 @@ func replaceParamsJSONPath(params interface{}, input interface{}) (interface{}, 
 		// Recurse over params find keys to replace
 		for key, value := range params.(map[string]interface{}) {
 			if strings.HasSuffix(key, ".$") {
-				fmt.Printf("key: %v\n", key)
 				key = key[:len(key)-len(".$")]
 				// value must be a JSON path string!
 				switch value.(type) {
