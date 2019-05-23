@@ -62,12 +62,33 @@ func (sm *StateMachine) FindTask(name string) (*state.TaskState, error) {
 	return task, nil
 }
 
+func (sm *StateMachine) FindAction(name string) (*state.ActionState, error) {
+	action, ok := sm.Actions()[name]
+
+	if !ok {
+		return nil, fmt.Errorf("Handler Error: Cannot Find Action %v", name)
+	}
+
+	return action, nil
+}
+
 func (sm *StateMachine) Tasks() map[string]*state.TaskState {
 	tasks := map[string]*state.TaskState{}
 	for name, s := range sm.States {
 		switch s.(type) {
 		case *state.TaskState:
 			tasks[name] = s.(*state.TaskState)
+		}
+	}
+	return tasks
+}
+
+func (sm *StateMachine) Actions() map[string]*state.ActionState {
+	tasks := map[string]*state.ActionState{}
+	for name, s := range sm.States {
+		switch s.(type) {
+		case *state.ActionState:
+			tasks[name] = s.(*state.ActionState)
 		}
 	}
 	return tasks
@@ -87,6 +108,18 @@ func (sm *StateMachine) SetDefaultHandler() {
 	}
 }
 
+func (sm *StateMachine) SetActionHandlers(handlers *handler.ActionHandlers) error {
+	for name, _ := range sm.Actions() {
+		if handler := (*handlers)[name]; handler != nil {
+			if err := sm.SetActionHandler(name, handler); err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
+}
+
 func (sm *StateMachine) SetTaskFnHandlers(tfs *handler.TaskHandlers) error {
 	taskHandlers, err := handler.CreateHandler(tfs)
 	if err != nil {
@@ -97,6 +130,19 @@ func (sm *StateMachine) SetTaskFnHandlers(tfs *handler.TaskHandlers) error {
 		if err := sm.SetTaskHandler(name, taskHandlers); err != nil {
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (sm *StateMachine) SetActionHandler(action_name string, resource_fn interface{}) error {
+	action, err := sm.FindAction(action_name)
+	if err != nil {
+		return err
+	}
+
+	if action != nil {
+		action.SetActionHandler(resource_fn)
 	}
 
 	return nil

@@ -86,6 +86,7 @@ func ValidateHandler(handlerSymbol interface{}) error {
 
 func validateArguments(handler reflect.Type) error {
 	if handler.NumIn() != 2 {
+		debug.PrintStack()
 		return fmt.Errorf("handlers must take two arguments, but handler takes %d", handler.NumIn())
 	}
 
@@ -191,7 +192,6 @@ func recoveryError(r interface{}) error {
 	default:
 		return errors.PanicError{fmt.Sprintf("Unknown %v", x)}
 	}
-
 }
 
 // HANDLERS

@@ -167,6 +167,7 @@ func processError(s State, exec Execution) Execution {
 }
 func inputOutput(inputPath *jsonpath.Path, outputPath *jsonpath.Path, exec Execution) Execution {
 	return func(ctx context.Context, input interface{}) (interface{}, *string, error) {
+		origInput := input
 		input, err := inputPath.Get(input)
 
 		if err != nil {
@@ -179,7 +180,12 @@ func inputOutput(inputPath *jsonpath.Path, outputPath *jsonpath.Path, exec Execu
 			return nil, nil, err
 		}
 
-		output, err = outputPath.Get(output)
+		// Merge output into original input and return
+		for k, v := range output.(map[string]interface{}) {
+			origInput.(map[string]interface{})[k] = v
+		}
+
+		output, err = outputPath.Get(origInput)
 
 		if err != nil {
 			return nil, nil, fmt.Errorf("Output Error: %v", err)
@@ -205,14 +211,13 @@ func withParams(params interface{}, exec Execution) Execution {
 }
 
 func replaceParamsJSONPath(params interface{}, input interface{}) (interface{}, error) {
-
 	switch params.(type) {
 	case map[string]interface{}:
-
 		newParams := map[string]interface{}{}
 		// Recurse over params find keys to replace
 		for key, value := range params.(map[string]interface{}) {
 			if strings.HasSuffix(key, ".$") {
+				fmt.Printf("key: %v\n", key)
 				key = key[:len(key)-len(".$")]
 				// value must be a JSON path string!
 				switch value.(type) {

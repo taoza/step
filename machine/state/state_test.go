@@ -80,9 +80,25 @@ func parseTaskState(b []byte, t *testing.T) *TaskState {
 	return &p
 }
 
+func parseActionState(b []byte, t *testing.T) *ActionState {
+	var p ActionState
+	err := json.Unmarshal(b, &p)
+	assert.NoError(t, err)
+	p.SetName(to.Strp("ActionState"))
+	p.SetType(to.Strp("Action"))
+	return &p
+}
+
 func parseValidTaskState(b []byte, handler interface{}, t *testing.T) *TaskState {
 	state := parseTaskState(b, t)
 	state.SetTaskHandler(handler)
+	assert.NoError(t, state.Validate())
+	return state
+}
+
+func parseValidActionState(b []byte, handler interface{}, t *testing.T) *ActionState {
+	state := parseActionState(b, t)
+	state.SetActionHandler(handler)
 	assert.NoError(t, state.Validate())
 	return state
 }
