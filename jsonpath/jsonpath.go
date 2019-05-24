@@ -265,7 +265,7 @@ func recursiveGet(data interface{}, path []string) (interface{}, error) {
 		value, ok := data.(map[string]interface{})[path[0]]
 
 		if !ok {
-			return data, NOT_FOUND_ERROR
+			return data, fmt.Errorf("JSON path not found: %v", path[0])
 		}
 
 		return recursiveGet(value, path[1:])

@@ -31,7 +31,7 @@ func Exec(state_machine *machine.StateMachine, err error) func(*string) {
 		output_json := exec.OutputJSON
 
 		if err != nil {
-			fmt.Println("ERROR", err)
+			fmt.Println("Failed to execute: ", err)
 			os.Exit(1)
 		}
 
