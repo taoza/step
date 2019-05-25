@@ -3,6 +3,7 @@ package state
 import (
 	"context"
 	"fmt"
+	"regexp"
 	"strings"
 
 	"github.com/coinbase/step/jsonpath"
@@ -219,21 +220,41 @@ func replaceParamsJSONPath(params interface{}, input interface{}) (interface{}, 
 			if strings.HasSuffix(key, ".$") {
 				key = key[:len(key)-len(".$")]
 				// value must be a JSON path string!
-				switch value.(type) {
-				case string:
-				default:
+				if valueStr, ok := value.(string); ok {
+					if strings.Contains(valueStr, "{{") && strings.Contains(valueStr, "}}") {
+						// resolve string interpolation
+						re := regexp.MustCompile(`\{\{(.*?)\}\}`)
+						allPaths := re.FindAllString(valueStr, -1)
+						for _, pathStr := range allPaths {
+							purePath := strings.Trim(pathStr, "{{")
+							purePath = strings.Trim(purePath, "}}")
+							path, err := jsonpath.NewPath(purePath)
+							if err != nil {
+								return nil, err
+							}
+							resolvedValue, err := path.Get(input)
+							if err != nil {
+								return nil, err
+							}
+							resolvedStrValue := fmt.Sprintf("%v", resolvedValue)
+							valueStr = strings.Replace(valueStr, pathStr, resolvedStrValue, -1)
+						}
+						newParams[key] = valueStr
+					} else {
+						// resolve direct path
+						path, err := jsonpath.NewPath(valueStr)
+						if err != nil {
+							return nil, err
+						}
+						newValue, err := path.Get(input)
+						if err != nil {
+							return nil, err
+						}
+						newParams[key] = newValue
+					}
+				} else {
 					return nil, fmt.Errorf("value to key %q is not string", key)
 				}
-				valueStr := value.(string)
-				path, err := jsonpath.NewPath(valueStr)
-				if err != nil {
-					return nil, err
-				}
-				newValue, err := path.Get(input)
-				if err != nil {
-					return nil, err
-				}
-				newParams[key] = newValue
 			} else {
 				newValue, err := replaceParamsJSONPath(value, input)
 				if err != nil {

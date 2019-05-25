@@ -250,12 +250,12 @@ func Test_TaskState_Parameters(t *testing.T) {
 	state := parseValidTaskState([]byte(`{
 		"Next": "Pass",
 		"Resource": "test",
-		"Parameters": {"Task": "Noop", "Input.$": "$.x"}
+		"Parameters": {"Task": "Noop", "Input.$": "$.x", "Interpolation.$": "{{$.x}}+{{$.y}}"}
 	}`), ReturnInputHandler, t)
 
 	testState(state, stateTestData{
-		Input:  map[string]interface{}{"x": "AHAH"},
-		Output: map[string]interface{}{"x": "AHAH", "Task": "Noop", "Input": "AHAH"},
+		Input:  map[string]interface{}{"x": "AHAH", "y": "BHBH"},
+		Output: map[string]interface{}{"x": "AHAH", "y": "BHBH", "Task": "Noop", "Input": "AHAH", "Interpolation": "AHAH+BHBH"},
 	}, t)
 }
 
