@@ -15,7 +15,7 @@ func Test_JSONPath_NotFound(t *testing.T) {
 	_, err = path.Get(test)
 
 	assert.Error(t, err)
-	assert.Equal(t, err.Error(), "JSON Path Not Found")
+	assert.Equal(t, "JSON path not found: a", err.Error())
 }
 
 func Test_JSONPath_Get_Default(t *testing.T) {

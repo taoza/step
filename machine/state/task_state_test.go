@@ -87,7 +87,7 @@ func Test_TaskState_TaskHandler(t *testing.T) {
 
 	testState(state, stateTestData{
 		Input:  map[string]interface{}{"a": "c"},
-		Output: map[string]interface{}{"z": "y"},
+		Output: map[string]interface{}{"a": "c", "z": "y"},
 	}, t)
 
 	assert.Equal(t, 1, *calls)
@@ -255,7 +255,7 @@ func Test_TaskState_Parameters(t *testing.T) {
 
 	testState(state, stateTestData{
 		Input:  map[string]interface{}{"x": "AHAH"},
-		Output: map[string]interface{}{"Task": "Noop", "Input": "AHAH"},
+		Output: map[string]interface{}{"x": "AHAH", "Task": "Noop", "Input": "AHAH"},
 	}, t)
 }
 
@@ -269,6 +269,6 @@ func Test_TaskState_InputPath_and_Parameters(t *testing.T) {
 
 	testState(state, stateTestData{
 		Input:  map[string]interface{}{"x": "AHAH"},
-		Output: map[string]interface{}{"Task": "Noop", "Input": "AHAH"},
+		Output: map[string]interface{}{"x": "AHAH", "Task": "Noop", "Input": "AHAH"},
 	}, t)
 }
