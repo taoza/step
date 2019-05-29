@@ -127,7 +127,6 @@ func check(err error) {
 		return
 	}
 	fmt.Println("ERROR", err)
-	os.Exit(1)
 }
 
 func bootstrapRun(release *deployer.Release, zip *string) {

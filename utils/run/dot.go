@@ -18,7 +18,6 @@ import (
 func Dot(stateMachine *machine.StateMachine, err error) {
 	if err != nil {
 		fmt.Println("ERROR", err)
-		os.Exit(1)
 	}
 
 	dotStr := toDot(stateMachine)

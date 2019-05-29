@@ -13,15 +13,15 @@ import (
 )
 
 // Exec returns a function that will execute the state machine
-func Exec(state_machine *machine.StateMachine, err error) func(*string) {
+func Exec(state_machine *machine.StateMachine, err error) func(*string) error {
 	if err != nil {
-		return func(input *string) {
+		return func(input *string) error {
 			fmt.Println("ERROR", err)
-			os.Exit(1)
+			return err
 		}
 	}
 
-	return func(input *string) {
+	return func(input *string) error {
 
 		if is.EmptyStr(input) {
 			input = to.Strp("{}")
@@ -32,10 +32,11 @@ func Exec(state_machine *machine.StateMachine, err error) func(*string) {
 
 		if err != nil {
 			fmt.Println("Failed to execute: ", err)
-			os.Exit(1)
+			return err
 		}
 
 		fmt.Printf("Final output: %v", output_json)
+		return nil
 	}
 }
 
@@ -43,14 +44,12 @@ func Exec(state_machine *machine.StateMachine, err error) func(*string) {
 func JSON(state_machine *machine.StateMachine, err error) {
 	if err != nil {
 		fmt.Println("ERROR", err)
-		os.Exit(1)
 	}
 
 	json, err := to.PrettyJSON(state_machine)
 
 	if err != nil {
 		fmt.Println("ERROR", err)
-		os.Exit(1)
 	}
 
 	fmt.Println(string(json))
@@ -63,11 +62,9 @@ func LambdaTasks(task_functions *handler.TaskHandlers) {
 
 	if err != nil {
 		fmt.Println("ERROR", err)
-		os.Exit(1)
 	}
 
 	lambda.Start(handler)
 
 	fmt.Println("ERROR: lambda.Start returned, but should have blocked")
-	os.Exit(1)
 }

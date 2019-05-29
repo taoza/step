@@ -63,7 +63,6 @@ func RegionAccountOrExit() (*string, *string) {
 
 	if region == nil || account_id == nil {
 		fmt.Println("AWS_REGION or AWS_ACCOUNT_ID not defined")
-		os.Exit(1)
 	}
 
 	return region, account_id
