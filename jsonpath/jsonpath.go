@@ -6,6 +6,8 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
+	"regexp"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -260,16 +262,47 @@ func recursiveGet(data interface{}, path []string) (interface{}, error) {
 		return nil, NOT_FOUND_ERROR
 	}
 
+	var indexed bool
+	var currentPath string
+	var currentIndex int
+	var err error
+
+	if strings.Contains(path[0], "[") && strings.Contains(path[0], "]") {
+		indexed = true
+		// Handle slice indexing
+		re := regexp.MustCompile(`\[(.*?)\]`)
+		indices := re.FindAllString(path[0], -1)
+		// TODO: handle multiple indices
+		indexStr := indices[0]
+		indexStr = strings.Trim(indexStr, "[")
+		indexStr = strings.Trim(indexStr, "]")
+		currentIndex, err = strconv.Atoi(indexStr)
+		if err != nil {
+			return data, fmt.Errorf("Error: %v while indexing: %v", err, path[0])
+		}
+		currentPath = strings.Split(path[0], "[")[0]
+	} else {
+		currentPath = path[0]
+	}
+
 	switch data.(type) {
 	case map[string]interface{}:
-		value, ok := data.(map[string]interface{})[path[0]]
+		var (
+			value interface{}
+			ok    bool
+		)
+
+		if indexed {
+			value, ok = data.(map[string]interface{})[currentPath]
+			value = reflect.ValueOf(value).Index(currentIndex).Interface()
+		} else {
+			value, ok = data.(map[string]interface{})[currentPath]
+		}
 
 		if !ok {
 			return data, fmt.Errorf("JSON path not found: %v", path[0])
 		}
-
 		return recursiveGet(value, path[1:])
-
 	default:
 		return data, NOT_FOUND_ERROR
 	}

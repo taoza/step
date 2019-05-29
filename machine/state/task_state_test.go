@@ -246,7 +246,7 @@ func Test_TaskState_Catch_AND_Dont_Retry(t *testing.T) {
 	assert.Equal(t, 2, *calls)
 }
 
-func Test_TaskState_Parameters(t *testing.T) {
+func Test_TaskState_Parameters_Interpolation(t *testing.T) {
 	state := parseValidTaskState([]byte(`{
 		"Next": "Pass",
 		"Resource": "test",
@@ -256,6 +256,23 @@ func Test_TaskState_Parameters(t *testing.T) {
 	testState(state, stateTestData{
 		Input:  map[string]interface{}{"x": "AHAH", "y": "BHBH"},
 		Output: map[string]interface{}{"x": "AHAH", "y": "BHBH", "Task": "Noop", "Input": "AHAH", "Interpolation": "AHAH+BHBH"},
+	}, t)
+}
+
+func Test_TaskState_Parameters_Index(t *testing.T) {
+	state := parseValidTaskState([]byte(`{
+		"Next": "Pass",
+		"Resource": "test",
+		"Parameters": {"Task": "Noop", "IndexedValue.$": "$.fruits[1]"}
+	}`), ReturnInputHandler, t)
+
+	testState(state, stateTestData{
+		Input: map[string]interface{}{"fruits": []string{"apple", "banana"}},
+		Output: map[string]interface{}{
+			"fruits":       []string{"apple", "banana"},
+			"Task":         "Noop",
+			"IndexedValue": "banana",
+		},
 	}, t)
 }
 
