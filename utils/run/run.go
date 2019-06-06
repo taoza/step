@@ -28,13 +28,12 @@ func Exec(state_machine *machine.StateMachine, err error) func(*string) error {
 		}
 
 		exec, err := state_machine.Execute(input)
-		output_json := exec.OutputJSON
-
 		if err != nil {
 			fmt.Println("Failed to execute: ", err)
 			return err
 		}
 
+		output_json := exec.OutputJSON
 		fmt.Printf("Final output: %v", output_json)
 		return nil
 	}
