@@ -72,8 +72,10 @@ func (path *Path) String() string {
 // ParsePathString parses a path string
 func ParsePathString(path_string string) ([]string, error) {
 	// must start with $.<value> otherwise empty path
-	if path_string == "" || path_string[0:1] != "$" {
-		return nil, fmt.Errorf("Bad JSON path: must start with $")
+	if path_string == "" || path_string[0:1] != "$" ||
+		// required by string interpolation
+		(strings.Contains(path_string, "{{") && strings.Contains(path_string, "}}") && strings.Contains(path_string, "$")) {
+		return nil, fmt.Errorf("Bad JSON path: must start with $, or contains string interpolation")
 	}
 
 	if path_string == "$" {
