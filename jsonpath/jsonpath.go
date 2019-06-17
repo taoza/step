@@ -294,16 +294,15 @@ func recursiveGet(data interface{}, path []string) (interface{}, error) {
 			ok    bool
 		)
 
-		if indexed {
-			value, ok = data.(map[string]interface{})[currentPath]
-			value = reflect.ValueOf(value).Index(currentIndex).Interface()
-		} else {
-			value, ok = data.(map[string]interface{})[currentPath]
-		}
-
+		value, ok = data.(map[string]interface{})[currentPath]
 		if !ok {
 			return data, fmt.Errorf("JSON path not found: %v", path[0])
 		}
+
+		if indexed {
+			value = reflect.ValueOf(value).Index(currentIndex).Interface()
+		}
+
 		return recursiveGet(value, path[1:])
 	default:
 		return data, NOT_FOUND_ERROR
