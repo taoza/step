@@ -181,9 +181,12 @@ func inputOutput(inputPath *jsonpath.Path, outputPath *jsonpath.Path, exec Execu
 			return nil, nil, err
 		}
 
-		// Merge output into original input and return
-		for k, v := range output.(map[string]interface{}) {
-			origInput.(map[string]interface{})[k] = v
+		// Auto-merge output into original input and return only when output is a map
+		// TODO: see if this magic is doing more harm
+		if out, ok := output.(map[string]interface{}); ok {
+			for k, v := range out {
+				origInput.(map[string]interface{})[k] = v
+			}
 		}
 
 		output, err = outputPath.Get(origInput)
