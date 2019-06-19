@@ -245,6 +245,8 @@ func replaceParamsJSONPath(params interface{}, input interface{}) (interface{}, 
 							switch v := resolvedValue.(type) {
 							case int64:
 								resolvedStrValue = strconv.FormatInt(v, 10)
+							case float64:
+								resolvedStrValue = strconv.FormatFloat(v, 'f', -1, 64)
 							default:
 								resolvedStrValue = fmt.Sprintf("%v", v)
 							}
