@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"regexp"
+	"strconv"
 	"strings"
 
 	"github.com/coinbase/step/jsonpath"
@@ -239,7 +240,14 @@ func replaceParamsJSONPath(params interface{}, input interface{}) (interface{}, 
 							if err != nil {
 								return nil, err
 							}
-							resolvedStrValue := fmt.Sprintf("%v", resolvedValue)
+							// stringify the resolved value according to types
+							var resolvedStrValue string
+							switch v := resolvedValue.(type) {
+							case int64:
+								resolvedStrValue = strconv.FormatInt(v, 10)
+							default:
+								resolvedStrValue = fmt.Sprintf("%v", v)
+							}
 							valueStr = strings.Replace(valueStr, pathStr, resolvedStrValue, -1)
 						}
 						newParams[key] = valueStr

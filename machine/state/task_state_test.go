@@ -254,8 +254,8 @@ func Test_TaskState_Parameters_Interpolation(t *testing.T) {
 	}`), ReturnInputHandler, t)
 
 	testState(state, stateTestData{
-		Input:  map[string]interface{}{"x": "AHAH", "y": "BHBH"},
-		Output: map[string]interface{}{"x": "AHAH", "y": "BHBH", "Task": "Noop", "Input": "AHAH", "Interpolation": "AHAH+BHBH"},
+		Input:  map[string]interface{}{"x": "AHAH", "y": 1234567890},
+		Output: map[string]interface{}{"x": "AHAH", "y": 1234567890, "Task": "Noop", "Input": "AHAH", "Interpolation": "AHAH+1234567890"},
 	}, t)
 }
 
