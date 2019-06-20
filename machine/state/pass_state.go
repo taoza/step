@@ -35,7 +35,11 @@ func (s *PassState) Execute(ctx context.Context, input interface{}) (output inte
 }
 
 func (s *PassState) process(ctx context.Context, input interface{}) (output interface{}, next *string, err error) {
-	return s.Result, nextState(s.Next, s.End), nil
+	resolvedResult, err := replaceParamsJSONPath(s.Result, input)
+	if err != nil {
+		return nil, nil, err
+	}
+	return resolvedResult, nextState(s.Next, s.End), nil
 }
 
 func (s *PassState) Validate() error {

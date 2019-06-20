@@ -43,6 +43,27 @@ func Test_PassState_ResultPath(t *testing.T) {
 	testState(state, stateTestData{Output: map[string]interface{}{"a": "b"}}, t)
 }
 
+func Test_PassState_ResultPath_Interpolation(t *testing.T) {
+	state := parsePassState([]byte(`{
+		"Next": "Pass",
+		"Result": {
+			"output.$": "$.colour.blue"
+		},
+		"ResultPath": "$.colourResult"
+	}`), t)
+	testState(state, stateTestData{
+		Input: map[string]interface{}{
+			"colour": map[string]interface{}{"blue": "#0000ff"},
+			"coffee": map[string]interface{}{"flatwhite": 100},
+		},
+		Output: map[string]interface{}{
+			"colour":       map[string]interface{}{"blue": "#0000ff"},
+			"coffee":       map[string]interface{}{"flatwhite": 100},
+			"colourResult": map[string]interface{}{"output": "#0000ff"},
+		},
+	}, t)
+}
+
 func Test_PassState_ResultPathOverrwite(t *testing.T) {
 	state := parsePassState([]byte(`{ "Next": "Pass", "Result": "b", "ResultPath": "$.a"}`), t)
 	testState(state, stateTestData{
