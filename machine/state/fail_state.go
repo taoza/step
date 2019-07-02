@@ -19,7 +19,11 @@ type FailState struct {
 }
 
 func (s *FailState) Execute(_ context.Context, input interface{}) (output interface{}, next *string, err error) {
-	return errorOutput(s.Error, s.Cause), nil, fmt.Errorf("Fail")
+	cause := "Undefined"
+	if s.Cause != nil {
+		cause = *(s.Cause)
+	}
+	return errorOutput(s.Error, s.Cause), nil, fmt.Errorf("Fail State with Cause: %v", cause)
 }
 
 func (s *FailState) Validate() error {
