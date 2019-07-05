@@ -250,22 +250,61 @@ func Test_TaskState_Parameters_Interpolation(t *testing.T) {
 	state := parseValidTaskState([]byte(`{
 		"Next": "Pass",
 		"Resource": "test",
-		"Parameters": {"Task": "Noop", "Input.$": "$.x", "Interpolation.$": "{{$.x}}+{{$.y}}+{{$.z}}"}
+		"Parameters": {
+			"Task": "Noop",
+			"Input.$": "$.w",
+			"Interpolation.$": "{{$.y}}+{{$.z}}"
+		}
 	}`), ReturnInputHandler, t)
 
 	testState(state, stateTestData{
 		Input: map[string]interface{}{
-			"x": "AHAH",
+			"w": "AHAH",
 			"y": int64(1234567890),
 			"z": float64(1234567890.123),
 		},
 		Output: map[string]interface{}{
-			"x":             "AHAH",
+			"w":             "AHAH",
 			"y":             int64(1234567890),
 			"z":             float64(1234567890.123),
 			"Task":          "Noop",
 			"Input":         "AHAH",
-			"Interpolation": "AHAH+1234567890+1234567890.123"},
+			"Interpolation": "1234567890+1234567890.123",
+		},
+	}, t)
+}
+
+func Test_TaskState_Parameters_Nested_Interpolation(t *testing.T) {
+	state := parseValidTaskState([]byte(`{
+		"Next": "Pass",
+		"Resource": "test",
+		"Parameters": {
+			"Task": "Noop",
+			"NestedInterpolationArray.$": "{{$.array[{{$.index}}]}}",
+			"NestedInterpolationMap.$": "{{$.map.{{$.key}}}}"
+		}
+	}`), ReturnInputHandler, t)
+
+	input := map[string]interface{}{
+		// Array test case
+		"array": []interface{}{"a", "b", "c"},
+		"index": 1,
+		// Map test case
+		"map": map[string]interface{}{"cake": "creme brulee", "coffee": "flatwhite"},
+		"key": "coffee",
+	}
+
+	testState(state, stateTestData{
+		Input: input,
+		Output: map[string]interface{}{
+			"Task":                     "Noop",
+			"index":                    1,
+			"array":                    []interface{}{"a", "b", "c"},
+			"NestedInterpolationArray": "b",
+			"map":                      map[string]interface{}{"cake": "creme brulee", "coffee": "flatwhite"},
+			"key":                      "coffee",
+			"NestedInterpolationMap":   "flatwhite",
+		},
 	}, t)
 }
 

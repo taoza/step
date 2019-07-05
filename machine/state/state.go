@@ -215,6 +215,10 @@ func withParams(params interface{}, exec Execution) Execution {
 	}
 }
 
+func hasHandlebars(input string) bool {
+	return strings.Contains(input, "{{") && strings.Contains(input, "}}")
+}
+
 func replaceParamsJSONPath(params interface{}, input interface{}) (interface{}, error) {
 	switch params.(type) {
 	case map[string]interface{}:
@@ -225,32 +229,38 @@ func replaceParamsJSONPath(params interface{}, input interface{}) (interface{}, 
 				key = key[:len(key)-len(".$")]
 				// value must be a JSON path string!
 				if valueStr, ok := value.(string); ok {
-					if strings.Contains(valueStr, "{{") && strings.Contains(valueStr, "}}") {
-						// resolve string interpolation
-						re := regexp.MustCompile(`\{\{(.*?)\}\}`)
-						allPaths := re.FindAllString(valueStr, -1)
-						for _, pathStr := range allPaths {
-							purePath := strings.Trim(pathStr, "{{")
-							purePath = strings.Trim(purePath, "}}")
-							path, err := jsonpath.NewPath(purePath)
-							if err != nil {
-								return nil, err
+					// TODO: This should be extracted later
+					if hasHandlebars(valueStr) {
+						var oldValueStr string // prevent infinit loop below
+						// Resolve all handlebars
+						for hasHandlebars(valueStr) && oldValueStr != valueStr {
+							oldValueStr = valueStr
+							// resolve string interpolation
+							re := regexp.MustCompile(`\{\{\$[a-zA-Z0-9.\[\]]+\}\}`)
+							allPaths := re.FindAllString(valueStr, -1)
+							for _, pathStr := range allPaths {
+								purePath := strings.Trim(pathStr, "{{")
+								purePath = strings.Trim(purePath, "}}")
+								path, err := jsonpath.NewPath(purePath)
+								if err != nil {
+									return nil, err
+								}
+								resolvedValue, err := path.Get(input)
+								if err != nil {
+									return nil, err
+								}
+								// stringify the resolved value according to types
+								var resolvedStrValue string
+								switch v := resolvedValue.(type) {
+								case int64:
+									resolvedStrValue = strconv.FormatInt(v, 10)
+								case float64:
+									resolvedStrValue = strconv.FormatFloat(v, 'f', -1, 64)
+								default:
+									resolvedStrValue = fmt.Sprintf("%v", v)
+								}
+								valueStr = strings.Replace(valueStr, pathStr, resolvedStrValue, -1)
 							}
-							resolvedValue, err := path.Get(input)
-							if err != nil {
-								return nil, err
-							}
-							// stringify the resolved value according to types
-							var resolvedStrValue string
-							switch v := resolvedValue.(type) {
-							case int64:
-								resolvedStrValue = strconv.FormatInt(v, 10)
-							case float64:
-								resolvedStrValue = strconv.FormatFloat(v, 'f', -1, 64)
-							default:
-								resolvedStrValue = fmt.Sprintf("%v", v)
-							}
-							valueStr = strings.Replace(valueStr, pathStr, resolvedStrValue, -1)
 						}
 						newParams[key] = valueStr
 					} else {
