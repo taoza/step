@@ -253,23 +253,29 @@ func Test_TaskState_Parameters_Interpolation(t *testing.T) {
 		"Parameters": {
 			"Task": "Noop",
 			"Input.$": "$.w",
-			"Interpolation.$": "{{$.y}}+{{$.z}}"
+			"Interpolation.$": "{{$.y}}+{{$.z}}+{{$.under_score}}+{{$.dash-dash}}+{{$.colon:colon}}"
 		}
 	}`), ReturnInputHandler, t)
 
 	testState(state, stateTestData{
 		Input: map[string]interface{}{
-			"w": "AHAH",
-			"y": int64(1234567890),
-			"z": float64(1234567890.123),
+			"w":           "AHAH",
+			"under_score": "underscore",
+			"dash-dash":   "dash",
+			"colon:colon": "colon",
+			"y":           int64(1234567890),
+			"z":           float64(1234567890.123),
 		},
 		Output: map[string]interface{}{
 			"w":             "AHAH",
+			"under_score":   "underscore",
+			"dash-dash":     "dash",
+			"colon:colon":   "colon",
 			"y":             int64(1234567890),
 			"z":             float64(1234567890.123),
 			"Task":          "Noop",
 			"Input":         "AHAH",
-			"Interpolation": "1234567890+1234567890.123",
+			"Interpolation": "1234567890+1234567890.123+underscore+dash+colon",
 		},
 	}, t)
 }

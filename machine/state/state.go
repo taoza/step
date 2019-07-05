@@ -236,7 +236,7 @@ func replaceParamsJSONPath(params interface{}, input interface{}) (interface{}, 
 						for hasHandlebars(valueStr) && oldValueStr != valueStr {
 							oldValueStr = valueStr
 							// resolve string interpolation
-							re := regexp.MustCompile(`\{\{\$[a-zA-Z0-9.\[\]]+\}\}`)
+							re := regexp.MustCompile(`\{\{\$[a-zA-Z0-9-_:.\[\]]+\}\}`)
 							allPaths := re.FindAllString(valueStr, -1)
 							for _, pathStr := range allPaths {
 								purePath := strings.Trim(pathStr, "{{")
