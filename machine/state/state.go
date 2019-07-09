@@ -12,6 +12,9 @@ import (
 	"github.com/coinbase/step/utils/to"
 )
 
+const openBraces = "{{"
+const closeBraces = "}}"
+
 // TYPES
 
 type Execution func(context.Context, interface{}) (interface{}, *string, error)
@@ -216,7 +219,7 @@ func withParams(params interface{}, exec Execution) Execution {
 }
 
 func hasHandlebars(input string) bool {
-	return strings.Contains(input, "{{") && strings.Contains(input, "}}")
+	return strings.Contains(input, openBraces) && strings.Contains(input, closeBraces)
 }
 
 func replaceParamsJSONPath(params interface{}, input interface{}) (interface{}, error) {
@@ -239,8 +242,8 @@ func replaceParamsJSONPath(params interface{}, input interface{}) (interface{}, 
 							re := regexp.MustCompile(`\{\{\$[a-zA-Z0-9-_:.\[\]]+\}\}`)
 							allPaths := re.FindAllString(valueStr, -1)
 							for _, pathStr := range allPaths {
-								purePath := strings.Trim(pathStr, "{{")
-								purePath = strings.Trim(purePath, "}}")
+								purePath := strings.Trim(pathStr, openBraces)
+								purePath = strings.Trim(purePath, closeBraces)
 								path, err := jsonpath.NewPath(purePath)
 								if err != nil {
 									return nil, err
