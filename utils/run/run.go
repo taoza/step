@@ -13,29 +13,24 @@ import (
 )
 
 // Exec returns a function that will execute the state machine
-func Exec(state_machine *machine.StateMachine, err error) func(*string) error {
+func Exec(state_machine *machine.StateMachine, err error) func(*string) (output string, err error) {
 	if err != nil {
-		return func(input *string) error {
-			fmt.Println("ERROR", err)
-			return err
+		return func(input *string) (output string, err error) {
+			return "", err
 		}
 	}
 
-	return func(input *string) error {
-
+	return func(input *string) (output string, err error) {
 		if is.EmptyStr(input) {
 			input = to.Strp("{}")
 		}
 
 		exec, err := state_machine.Execute(input)
 		if err != nil {
-			fmt.Println("Failed to execute: ", err)
-			return err
+			return "", err
 		}
 
-		output_json := exec.OutputJSON
-		fmt.Printf("Final output: %v", output_json)
-		return nil
+		return exec.OutputJSON, nil
 	}
 }
 
