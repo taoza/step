@@ -64,6 +64,32 @@ func Test_PassState_ResultPath_Interpolation(t *testing.T) {
 	}, t)
 }
 
+func Test_PassState_ResultPath_Map_Merge(t *testing.T) {
+	state := parsePassState([]byte(`{
+		"Next": "Pass",
+		"Result": {
+			"blue": "#0000ff"
+		},
+		"ResultPath": "$.rainbow"
+	}`), t)
+	testState(state, stateTestData{
+		Input: map[string]interface{}{
+			"rainbow": map[string]interface{}{
+				"red":   "#ff0000",
+				"green": "#00ff00",
+				"blue":  "", // to be merged in and override
+			},
+		},
+		Output: map[string]interface{}{
+			"rainbow": map[string]interface{}{
+				"red":   "#ff0000",
+				"green": "#00ff00",
+				"blue":  "#0000ff",
+			},
+		},
+	}, t)
+}
+
 func Test_PassState_ResultPathOverrwite(t *testing.T) {
 	state := parsePassState([]byte(`{ "Next": "Pass", "Result": "b", "ResultPath": "$.a"}`), t)
 	testState(state, stateTestData{

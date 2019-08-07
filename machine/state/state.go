@@ -303,6 +303,19 @@ func result(resultPath *jsonpath.Path, exec Execution) Execution {
 		}
 
 		if result != nil {
+			// merge result if original result and new result are both map
+			originalValue, getPathError := resultPath.Get(input)
+			if resultPath != nil && getPathError == nil {
+				originalMapResult, originalReslutIsMap := originalValue.(map[string]interface{})
+				newMapResult, newReslutIsMap := result.(map[string]interface{})
+				if originalReslutIsMap && newReslutIsMap {
+					for k, v := range newMapResult {
+						originalMapResult[k] = v
+					}
+					result = originalMapResult
+				}
+			}
+			// Set result in the input
 			input, err := resultPath.Set(input, result)
 
 			if err != nil {
